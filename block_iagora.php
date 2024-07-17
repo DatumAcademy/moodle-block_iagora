@@ -23,12 +23,12 @@
  */
 
 /**
- * The iagora block class.
+ * Store configuration data for the iagora block.
  */
 class block_iagora extends block_base {
 
     /**
-     * Initialises the block.
+     * Initialize the block.
      *
      * @return void
      */
@@ -37,7 +37,7 @@ class block_iagora extends block_base {
     }
 
     /**
-     * Gets the block contents.
+     * Get the block content.
      *
      * @return string The block HTML.
      */
@@ -48,7 +48,14 @@ class block_iagora extends block_base {
 
         $this->content = new stdClass();
         $this->content->footer = '';
-        $this->content->text = '';
+
+        $iframeurl = isset($this->config->iframeurl) ? $this->config->iframeurl : '';
+
+        if (empty($iframeurl)) {
+            $this->content->text = get_string('noiframeurl', 'block_iagora');
+        } else {
+            $this->content->text = '<iframe src="' . $iframeurl . '" width="100%" height="400px" frameborder="0"></iframe>';
+        }
 
         return $this->content;
     }
@@ -60,5 +67,28 @@ class block_iagora extends block_base {
      */
     public function applicable_formats() {
         return ['all' => true];
+    }
+
+    /**
+     * Allow the block to be configured.
+     *
+     * @return bool
+     */
+    public function instance_allow_config() {
+        return true;
+    }
+
+    /**
+     * Save instance configuration.
+     *
+     * @param stdClass $data The configuration data.
+     * @param bool $nolongerused Indicates if $data is no longer used.
+     * @return bool True if data was saved successfully, false otherwise.
+     */
+    public function instance_config_save($data, $nolongerused = false) {
+        if (isset($data->iframeurl)) {
+            $data->iframeurl = clean_param($data->iframeurl, PARAM_URL);
+        }
+        return parent::instance_config_save($data, $nolongerused);
     }
 }
