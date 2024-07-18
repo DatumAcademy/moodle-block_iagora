@@ -47,6 +47,7 @@ jobs:
               run: ~/.local/bin/gitlint --commits origin/main..HEAD
 
             - name: Setup PHP ${{ matrix.php }}
+              if: ${{ !cancelled() }}
               uses: shivammathur/setup-php@v2
               with:
                 php-version: ${{ matrix.php }}
@@ -54,6 +55,7 @@ jobs:
                 coverage: xdebug
         
             - name: Initialise moodle-plugin-ci
+              if: ${{ !cancelled() }}
               run: |
                 composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
                 echo $(cd ci/bin; pwd) >> $GITHUB_PATH
@@ -62,6 +64,7 @@ jobs:
                 echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
       
             - name: Install moodle-plugin-ci
+              if: ${{ !cancelled() }}
               run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
               env:
                 DB: ${{ matrix.database }}

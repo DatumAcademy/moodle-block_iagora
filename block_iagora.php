@@ -61,7 +61,7 @@ class block_iagora extends block_base {
     }
 
     /**
-     * Defines in which pages this block can be added.
+     * Define in which pages this block can be added.
      *
      * @return array of the pages where the block can be added.
      */
