@@ -22,8 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- $string['iframe_url_desc'] = 'Public URL available for chat iframe';
  $string['iframeurl'] = 'Iframe URL';
+ $string['iframeurl_desc'] = 'Public URL available for chat iframe';
  $string['iframeurl_help'] = 'Public URL for the Microsoft Copilot chat iframe';
  $string['noiframeurl'] = 'No url defined for this block. Please configure a URL in the block parameters';
  $string['pluginname'] = 'IAGORA';

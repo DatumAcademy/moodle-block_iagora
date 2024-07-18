@@ -43,7 +43,7 @@ class block_iagora_edit_form extends block_edit_form {
         $mform->setType('config_iframeurl', PARAM_URL);
         $mform->addHelpButton('config_iframeurl', 'iframeurl', 'block_iagora');
         $mform->setDefault('config_iframeurl', '');
-        $mform->addElement('static', 'iframe_url_desc', '', get_string('iframe_url_desc', 'block_iagora'));
+        $mform->addElement('static', 'iframeurl_desc', '', get_string('iframeurl_desc', 'block_iagora'));
 
     }
 
