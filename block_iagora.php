@@ -48,16 +48,50 @@ class block_iagora extends block_base {
 
         $this->content = new stdClass();
         $this->content->footer = '';
-
         $iframeurl = isset($this->config->iframeurl) ? $this->config->iframeurl : '';
 
-        if (empty($iframeurl)) {
-            $this->content->text = get_string('noiframeurl', 'block_iagora');
-        } else {
-            $this->content->text = '<iframe src="' . $iframeurl . '" width="100%" height="400px" frameborder="0"></iframe>';
-        }
+        // if (empty($iframeurl)) {
+        //     $this->content->text = get_string('noiframeurl', 'block_iagora');
+        // } else {
+        //     $this->content->text = '<iframe src="' . $iframeurl . '" width="100%" height="400px" frameborder="0"></iframe>';
+        // }
+        $this->content->text = $this->generate_chat_content($iframeurl);
 
         return $this->content;
+    }
+
+    /**
+     * Define in which pages this block can be added.
+     *
+     * @param string $iframeurl The URL to be used in the iframe.
+     * @return string The generated HTML content.
+     */
+    private function generate_chat_content($iframeurl) {
+        global $PAGE, $OUTPUT;  die($iframeurl);
+
+        // Load necessary styles and scripts
+        $PAGE->requires->js(new moodle_url('https://cdn.botframework.com/botframework-webchat/latest/webchat.js'), true);
+        $PAGE->requires->js_call_amd('block_iagora/iagora', 'init', [[
+            'copiloturl' => $iframeurl
+        ]]);
+
+        // Generate a unique identifier for the chat container
+        $chat_id = uniqid('iagora_chat_');
+
+        // Chat button icon (using Moodle icons)
+        $chat_icon = $OUTPUT->pix_icon('t/message', get_string('openchat', 'block_iagora'));
+
+        $output = html_writer::div($chat_icon, 'iagora-chat-toggle', ['id' => 'iagora-toggle-' . $chat_id,'data-url' => 'iframe_url']);
+        $output .= html_writer::div('', 'iagora-chat-container', ['id' => $chat_id]);
+
+        // Add initialization script
+        // $output .= html_writer::script("
+        //     document.addEventListener('DOMContentLoaded', function() {
+        //         initIagoraChat('{$chat_id}', " . json_encode($this->config) . ");
+        //     });
+        // ");
+
+        return $output;
     }
 
     /**
@@ -67,15 +101,6 @@ class block_iagora extends block_base {
      */
     public function applicable_formats() {
         return ['all' => true];
-    }
-
-    /**
-     * Allow the block to be configured.
-     *
-     * @return bool
-     */
-    public function instance_allow_config() {
-        return true;
     }
 
     /**

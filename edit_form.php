@@ -45,6 +45,15 @@ class block_iagora_edit_form extends block_edit_form {
         $mform->setDefault('config_iframeurl', '');
         $mform->addElement('static', 'iframeurl_desc', '', get_string('iframeurl_desc', 'block_iagora'));
 
+        // Background color
+        $mform->addElement('text', 'config_backgroundcolor', get_string('backgroundcolor', 'block_iagora'));
+        $mform->setDefault('config_backgroundcolor', '#A9D1F3');
+        $mform->setType('config_backgroundcolor', PARAM_TEXT);
+
+        // Bubble background color
+        $mform->addElement('text', 'config_bubblebackground', get_string('bubblebackground', 'block_iagora'));
+        $mform->setDefault('config_bubblebackground', '#F3CBA9');
+        $mform->setType('config_bubblebackground', PARAM_TEXT);
     }
 
 }

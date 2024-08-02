@@ -1,0 +1,16 @@
+{
+  "name": "iagora",
+  "version": "1.0.0",
+  "description": "iagora Chat block for Moodle",
+  "author": "Datum Academy <dev@datum.academy>",
+  "license": "GPL-3.0",
+  "private": true,
+  "dependencies": {
+    "botframework-webchat": "^4.15.0"
+  },
+  "scripts": {
+    "build": "grunt amd",
+    "watch": "grunt watch",
+    "lint": "grunt eslint stylelint"
+  }
+}
