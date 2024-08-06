@@ -54,10 +54,31 @@ class block_iagora extends block_base {
         if (empty($iframeurl)) {
             $this->content->text = get_string('noiframeurl', 'block_iagora');
         } else {
-            $this->content->text = '<iframe src="' . $iframeurl . '" width="100%" height="400px" frameborder="0"></iframe>';
+            $this->content->text = $this->generate_chat_content($iframeurl);
         }
 
         return $this->content;
+    }
+
+    /**
+     * Return the HTML content for the copilot chatbot.
+     *
+     * @param string $iframeurl The URL to be used in the iframe.
+     * @return string The generated HTML content.
+     */
+    private function generate_chat_content($iframeurl) {
+        global $PAGE;
+
+        // Generate a unique identifier for the chat container
+        $chatid = uniqid('iagora_chat_');
+
+        $PAGE->requires->js_call_amd('block_iagora/iagora', 'init', [[
+            'copilotUrl' => $iframeurl,
+            'chatId' => $chatid,
+            // ...other parameters we want to pass to the JavaScript side.
+        ]]);
+
+        return html_writer::div('', 'iagora-chat-container', ['id' => $chatid]);
     }
 
     /**

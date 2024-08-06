@@ -1,0 +1,27 @@
+{
+  "name": "iagora",
+  "version": "1.0.0",
+  "description": "iagora Chat block for Moodle",
+  "author": "Datum Academy <dev@datum.academy>",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "dependencies": {
+    "botframework-webchat": "4.16.0"
+  },
+  "devDependencies": {
+    "grunt": "^1.6.1",
+    "grunt-contrib-clean": "^2.0.1",
+    "grunt-contrib-sass": "^2.0.0",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-load-gruntfile": "^0.0.2",
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4",
+    "wrapper-webpack-plugin": "^2.2.2"
+  },
+  "scripts": {
+    "bundle": "npx webpack",
+    "build": "npx grunt amd",
+    "watch": "npx grunt watch",
+    "lint": "npx grunt eslint stylelint"
+  }
+}
