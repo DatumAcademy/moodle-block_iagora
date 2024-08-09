@@ -47,8 +47,6 @@ class block_iagora extends block_base {
         }
 
         $this->content = new stdClass();
-        $this->content->footer = '';
-
         $iframeurl = isset($this->config->iframeurl) ? $this->config->iframeurl : '';
 
         if (empty($iframeurl)) {
@@ -56,8 +54,29 @@ class block_iagora extends block_base {
         } else {
             $this->content->text = '<iframe src="' . $iframeurl . '" width="100%" height="400px" frameborder="0"></iframe>';
         }
-
+        $this->content->text = $this->generate_chat_content($iframeurl);
         return $this->content;
+    }
+
+    /**
+     * Define in which pages this block can be added.
+     *
+     * @param string $iframeurl The URL to be used in the iframe.
+     * @return string The generated HTML content.
+     */
+    private function generate_chat_content($iframeurl) {
+        global $PAGE, $OUTPUT;
+        // Generate a unique identifier for the chat container
+        $chat_id = uniqid('iagora_chat_');
+        // Chat button icon (using Moodle icons)
+        $chat_icon = $OUTPUT->pix_icon('t/message', get_string('openchat', 'block_iagora'));
+        $context = [
+            'chat_id' => $chat_id,
+            'chat_icon' => $chat_icon,
+            'tokenEndpointURL' => $iframeurl 
+        ];
+    
+        return $OUTPUT->render_from_template('block_iagora/chat', $context);
     }
 
     /**
@@ -67,15 +86,6 @@ class block_iagora extends block_base {
      */
     public function applicable_formats() {
         return ['all' => true];
-    }
-
-    /**
-     * Allow the block to be configured.
-     *
-     * @return bool
-     */
-    public function instance_allow_config() {
-        return true;
     }
 
     /**
