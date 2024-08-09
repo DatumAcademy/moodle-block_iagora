@@ -1,0 +1,93 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_iagora/chat
+
+    Display the iagora chat block.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * chatId: The ID of the chat div element where to render the chat block.
+    * tokenEndpointURL: The Copilot Token Endpoint URL for native apps.
+
+    Example context (json):
+    {
+        "chatId": "iagora_chat_55a6cad25a0f6",
+        "tokenEndpointURL": "https://insert/your/copilot/endpoint/url"
+    }
+}}
+{{#pix}} t/message, core {{/pix}}
+<div id="{{chatId}}" role="main"></div>
+
+<script crossorigin="anonymous" src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+
+{{#js}}
+/* global WebChat */
+/* eslint-disable promise/no-native */
+(async function() {
+  const styleOptions = {
+    hideUploadButton: true
+  };
+  const tokenEndpointURL = new URL('{{tokenEndpointURL}}');
+  const locale = document.documentElement.lang || 'en';
+  const apiVersion = tokenEndpointURL.searchParams.get('api-version');
+
+  const [directLineURL, token] = await Promise.all([
+    fetch(new URL(`/powervirtualagents/regionalchannelsettings?api-version=${apiVersion}`, tokenEndpointURL))
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to retrieve regional channel settings.');
+        }
+        return response.json();
+      })
+      .then(({channelUrlsById: {directline}}) => directline),
+    fetch(tokenEndpointURL)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to retrieve Direct Line token.');
+        }
+        return response.json();
+      })
+      .then(({token}) => token)
+  ]);
+
+  const directLine = WebChat.createDirectLine({domain: new URL('v3/directline', directLineURL), token});
+
+  const subscription = directLine.connectionStatus$.subscribe({
+    next(value) {
+      if (value === 2) {
+        directLine
+          .postActivity({
+            localTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            locale,
+            name: 'startConversation',
+            type: 'event'
+          })
+          .subscribe();
+        subscription.unsubscribe();
+      }
+    }
+  });
+
+  WebChat.renderWebChat({directLine, locale, styleOptions}, document.getElementById('{{chatId}}'));
+})();
+{{/js}}

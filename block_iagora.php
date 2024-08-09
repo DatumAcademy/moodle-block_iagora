@@ -48,16 +48,32 @@ class block_iagora extends block_base {
 
         $this->content = new stdClass();
         $this->content->footer = '';
+        $copilotendpointurl = isset($this->config->copilotendpointurl) ? $this->config->copilotendpointurl : '';
 
-        $iframeurl = isset($this->config->iframeurl) ? $this->config->iframeurl : '';
-
-        if (empty($iframeurl)) {
-            $this->content->text = get_string('noiframeurl', 'block_iagora');
+        if (empty($copilotendpointurl)) {
+            $this->content->text = get_string('nocopilotendpointurl', 'block_iagora');
         } else {
-            $this->content->text = '<iframe src="' . $iframeurl . '" width="100%" height="400px" frameborder="0"></iframe>';
+            $this->content->text = $this->generate_chat_content($copilotendpointurl);
         }
-
         return $this->content;
+
+    }
+
+    /**
+     * Generate the HTML content for the chat block.
+     *
+     * @param string $copilotendpointurl The URL to be used in the iframe.
+     * @return string The generated HTML content for the chat.
+     */
+    private function generate_chat_content($copilotendpointurl) {
+        global $OUTPUT;
+        // Generate a unique identifier for the chat container.
+        $chatid = uniqid('iagora_chat_');
+        $context = [
+            'chatId' => $chatid,
+            'tokenEndpointURL' => $copilotendpointurl,
+        ];
+        return $OUTPUT->render_from_template('block_iagora/chat', $context);
     }
 
     /**
@@ -86,8 +102,8 @@ class block_iagora extends block_base {
      * @return bool True if data was saved successfully, false otherwise.
      */
     public function instance_config_save($data, $nolongerused = false) {
-        if (isset($data->iframeurl)) {
-            $data->iframeurl = clean_param($data->iframeurl, PARAM_URL);
+        if (isset($data->copilotendpointurl)) {
+            $data->copilotendpointurl = clean_param($data->copilotendpointurl, PARAM_URL);
         }
         return parent::instance_config_save($data, $nolongerused);
     }

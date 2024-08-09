@@ -38,12 +38,11 @@ class block_iagora_edit_form extends block_edit_form {
         // Section header title according to language file.
         $mform->addElement('header', 'config_header', get_string('blocksettings', 'block'));
 
-        // Iframe URL.
-        $mform->addElement('text', 'config_iframeurl', get_string('iframeurl', 'block_iagora'));
-        $mform->setType('config_iframeurl', PARAM_URL);
-        $mform->addHelpButton('config_iframeurl', 'iframeurl', 'block_iagora');
-        $mform->setDefault('config_iframeurl', '');
-        $mform->addElement('static', 'iframeurl_desc', '', get_string('iframeurl_desc', 'block_iagora'));
+        $mform->addElement('text', 'config_copilotendpointurl', get_string('copilotendpointurl', 'block_iagora'));
+        $mform->setType('config_copilotendpointurl', PARAM_URL);
+        $mform->addHelpButton('config_copilotendpointurl', 'copilotendpointurl', 'block_iagora');
+        $mform->setDefault('config_copilotendpointurl', '');
+        $mform->addElement('static', 'copilotendpointurl_desc', '', get_string('copilotendpointurl_desc', 'block_iagora'));
 
     }
 
