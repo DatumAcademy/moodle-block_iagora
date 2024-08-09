@@ -22,8 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- $string['iframeurl'] = 'Iframe URL';
- $string['iframeurl_desc'] = 'Public URL available for chat iframe';
- $string['iframeurl_help'] = 'Public URL for the Microsoft Copilot chat iframe';
- $string['noiframeurl'] = 'No url defined for this block. Please configure a URL in the block parameters';
- $string['pluginname'] = 'IAGORA';
+$string['copilotendpointurl'] = 'Copilot URL';
+$string['copilotendpointurl_desc'] = 'Microsoft Copilot Token Endpoint URL';
+$string['copilotendpointurl_help'] = 'The Microsoft Copilot Token Endpoint URL is used to get the Direct Line token';
+$string['nocopilotendpointurl'] = 'No Copilot Endpoint URL defined for this block. Please configure it in the block parameters';
+$string['pluginname'] = 'IAGORA';
