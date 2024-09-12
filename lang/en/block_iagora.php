@@ -26,4 +26,5 @@ $string['copilotendpointurl'] = 'Copilot URL';
 $string['copilotendpointurl_desc'] = 'Microsoft Copilot Token Endpoint URL';
 $string['copilotendpointurl_help'] = 'The Microsoft Copilot Token Endpoint URL is used to get the Direct Line token';
 $string['nocopilotendpointurl'] = 'No Copilot Endpoint URL defined for this block. Please configure it in the block parameters';
+$string['nodirectlineurl'] = 'Failed to get Direct Line URL. Please check and update the Copilot Endpoint URL parameter';
 $string['pluginname'] = 'IAGORA';
