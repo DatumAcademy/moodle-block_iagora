@@ -37,8 +37,7 @@
         "token": "RCurR_XV9ZA.cwA.BKA.iaJrC8xpy8qbOF5xnR..."
     }
 }}
-{{#pix}} t/message, core {{/pix}}
-<div id="{{chatId}}" role="main"></div>
+<div id="{{chatId}}" role="main" style="height: 500px;"></div>
 
 <script crossorigin="anonymous" src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
 
@@ -60,7 +59,15 @@
             localTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             locale,
             name: 'startConversation',
-            type: 'event'
+            type: 'event',
+            value: {
+              'MoodleActivityContent': '{{moodleActivityContent}}',
+              'MoodleActivityName': '{{moodleActivityName}}',
+              'MoodleActivityType': '{{moodleActivityType}}',
+              'MoodleCourseName': '{{moodleCourseName}}',
+              'MoodleSectionName': '{{moodleSectionName}}',
+              'MoodleUserName': '{{moodleUserName}}',
+            }
           })
           .subscribe();
         subscription.unsubscribe();

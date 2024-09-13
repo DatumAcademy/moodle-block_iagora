@@ -74,12 +74,20 @@ class block_iagora extends block_base {
      * @return string The generated HTML content for the chat.
      */
     private function generate_chat_content($directlineurl, $token) {
-        global $OUTPUT;
+        global $OUTPUT, $USER, $COURSE, $PAGE;
         // Generate a unique identifier for the chat container.
+        // die(var_dump($PAGE));
         $chatid = uniqid('iagora_chat_');
+        $info = get_fast_modinfo($COURSE);
         $context = [
             'chatId' => $chatid,
             'directLineURL' => $directlineurl,
+            'moodleActivityContent' => $PAGE->activityrecord->content,
+            'moodleActivityName' => $PAGE->activityrecord->name,
+            'moodleActivityType' => $PAGE->pagetype,
+            'moodleCourseName' => $COURSE->fullname,
+            'moodleSectionName' =>$info->get_section_info($PAGE->cm->sectionnum)->name,
+            'moodleUserName' => $USER->firstname,
             'token' => $token,
         ];
         return $OUTPUT->render_from_template('block_iagora/chat', $context);
