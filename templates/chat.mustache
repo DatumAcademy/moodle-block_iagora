@@ -45,8 +45,21 @@
 /* eslint-disable promise/no-native */
 (async function() {
   const styleOptions = {
-    hideUploadButton: true
+    hideUploadButton: true,
+    botAvatarImage: "/image/iagora.jpg",
+    botAvatarInitials: 'BF',
+    userAvatarImage: 'https://github.com/compulim.png?size=64',
+    userAvatarInitials: 'WC'
   };
+  const styleSet = window.WebChat.createStyleSet({
+          bubbleBackground: 'rgba(0, 0, 255, .1)',
+          bubbleFromUserBackground: 'rgba(0, 255, 0, .1)'
+        });
+
+        styleSet.textContent = Object.assign({}, styleSet.textContent, {
+          fontFamily: "'Comic Sans MS', 'Arial', sans-serif",
+          fontWeight: 'bold'
+        });
   const tokenEndpointURL = new URL('{{tokenEndpointURL}}');
   const locale = document.documentElement.lang || 'en';
   const apiVersion = tokenEndpointURL.searchParams.get('api-version');
@@ -69,7 +82,7 @@
       })
       .then(({token}) => token)
   ]);
-
+  const completedactivities = [];
   const directLine = WebChat.createDirectLine({domain: new URL('v3/directline', directLineURL), token});
 
   const subscription = directLine.connectionStatus$.subscribe({
@@ -80,7 +93,10 @@
             localTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             locale,
             name: 'startConversation',
-            type: 'event'
+            type: 'event',
+            value: {
+              completedactivities: completedactivities
+            }
           })
           .subscribe();
         subscription.unsubscribe();
@@ -88,6 +104,6 @@
     }
   });
 
-  WebChat.renderWebChat({directLine, locale, styleOptions}, document.getElementById('{{chatId}}'));
+  WebChat.renderWebChat({directLine, locale, styleOptions, styleSet}, document.getElementById('{{chatId}}'));
 })();
 {{/js}}

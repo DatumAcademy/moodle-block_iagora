@@ -55,8 +55,42 @@ class block_iagora extends block_base {
         } else {
             $this->content->text = $this->generate_chat_content($copilotendpointurl);
         }
+
         return $this->content;
 
+    }
+    /**
+     * Retrieves the progress of a student in the current course.
+     *
+     * This function returns an array containing the names of activities the student has completed
+     * based on their activity completion status within the course.
+     *
+     * @return array An array of completed activities.
+     */
+    private function get_student_progress() {
+        global $COURSE, $USER;
+
+        $completedactivities = [];
+        $completion = new completion_info($COURSE);
+        $modinfo = get_fast_modinfo($COURSE, $USER->id);
+        $cms = $modinfo->get_cms();
+
+        foreach ($cms as $cm) {
+            if ($cm->completion == COMPLETION_TRACKING_NONE) {
+                continue;
+            }
+            if (!$cm->uservisible) {
+                continue;
+            }
+            $completiondata = $completion->get_data($cm, true, $USER->id);
+            if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                $completedactivities[] = $cm->name;
+            }
+        }
+
+        // Return the array of completed activities.
+        return $completedactivities;
     }
 
     /**
@@ -66,12 +100,13 @@ class block_iagora extends block_base {
      * @return string The generated HTML content for the chat.
      */
     private function generate_chat_content($copilotendpointurl) {
-        global $OUTPUT;
+        global $OUTPUT, $USER, $COURSE;
         // Generate a unique identifier for the chat container.
         $chatid = uniqid('iagora_chat_');
         $context = [
             'chatId' => $chatid,
             'tokenEndpointURL' => $copilotendpointurl,
+            'completedactivities' => json_encode($this->get_student_progress()),
         ];
         return $OUTPUT->render_from_template('block_iagora/chat', $context);
     }
