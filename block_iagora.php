@@ -42,36 +42,53 @@ class block_iagora extends block_base {
      * @return string The block HTML.
      */
     public function get_content() {
-        if ($this->content !== null) {
+        if (isset($this->content)) {
             return $this->content;
         }
 
         $this->content = new stdClass();
         $this->content->footer = '';
-        $copilotendpointurl = isset($this->config->copilotendpointurl) ? $this->config->copilotendpointurl : '';
+        $copilotendpointurl = $this->config->copilotendpointurl;
+        $directlineurl = $this->config->directlineurl;
 
-        if (empty($copilotendpointurl)) {
+        if (!isset($copilotendpointurl)) {
             $this->content->text = get_string('nocopilotendpointurl', 'block_iagora');
-        } else {
-            $this->content->text = $this->generate_chat_content($copilotendpointurl);
+            return $this->content;
         }
-        return $this->content;
 
+        if(!isset($directlineurl)) {
+            $this->content->text = get_string('nodirectlineurl', 'block_iagora');
+            return $this->content;
+        }
+
+        $token = json_decode(file_get_contents($copilotendpointurl), true)['token'];
+        $this->content->text = $this->generate_chat_content($directlineurl, $token);
+        return $this->content;
     }
 
     /**
      * Generate the HTML content for the chat block.
      *
-     * @param string $copilotendpointurl The URL to be used in the iframe.
+     * @param string $directlineurl The Direct Line API base URL.
+     * @param string $token The Copilot Direct Line token.
      * @return string The generated HTML content for the chat.
      */
-    private function generate_chat_content($copilotendpointurl) {
-        global $OUTPUT;
+    private function generate_chat_content($directlineurl, $token) {
+        global $OUTPUT, $USER, $COURSE, $PAGE;
         // Generate a unique identifier for the chat container.
+        // die(var_dump($PAGE));
         $chatid = uniqid('iagora_chat_');
+        $info = get_fast_modinfo($COURSE);
         $context = [
             'chatId' => $chatid,
-            'tokenEndpointURL' => $copilotendpointurl,
+            'directLineURL' => $directlineurl,
+            'moodleActivityContent' => $PAGE->activityrecord->content,
+            'moodleActivityName' => $PAGE->activityrecord->name,
+            'moodleActivityType' => $PAGE->pagetype,
+            'moodleCourseName' => $COURSE->fullname,
+            'moodleSectionName' =>$info->get_section_info($PAGE->cm->sectionnum)->name,
+            'moodleUserName' => $USER->firstname,
+            'token' => $token,
         ];
         return $OUTPUT->render_from_template('block_iagora/chat', $context);
     }
@@ -104,7 +121,25 @@ class block_iagora extends block_base {
     public function instance_config_save($data, $nolongerused = false) {
         if (isset($data->copilotendpointurl)) {
             $data->copilotendpointurl = clean_param($data->copilotendpointurl, PARAM_URL);
+            $directlineurl = $this->get_directline_url($data->copilotendpointurl);
+            $data->directlineurl = clean_param($directlineurl, PARAM_URL);
         }
         return parent::instance_config_save($data, $nolongerused);
+    }
+
+    /**
+     * Return the Direct Line API base URI from the Copilot token endpoint URL.
+     *
+     * @param string $copilotendpointurl The Copilot token endpoint URL.
+     * @return string The Direct Line API base URL.
+     */
+    public function get_directline_url($copilotendpointurl) {
+        $copilotendpoint = parse_url($copilotendpointurl);
+        parse_str($copilotendpoint['query'], $query);
+        $base = "{$copilotendpoint['scheme']}://{$copilotendpoint['host']}";
+        $path = "/powervirtualagents/regionalchannelsettings";
+        $url = "{$base}{$path}?api-version={$query['api-version']}";
+        $response = file_get_contents($url);
+        return json_decode($response, true)['channelUrlsById']['directline'];
     }
 }
