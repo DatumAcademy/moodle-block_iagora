@@ -37,7 +37,7 @@
         "token": "RCurR_XV9ZA.cwA.BKA.iaJrC8xpy8qbOF5xnR..."
     }
 }}
-<div id="{{chatId}}" role="main" style="height: 500px;"></div>
+<div id="{{chatId}}" role="main" style="height: 600px;"></div>
 
 <script crossorigin="anonymous" src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
 
@@ -46,7 +46,9 @@
 /* eslint-disable promise/no-native */
 (async function() {
   const styleOptions = {
-    hideUploadButton: true
+    hideUploadButton: true,
+    suggestedActionLayout: 'stacked',
+    suggestedActionsStackedLayoutButtonTextWrap: true,
   };
   const locale = document.documentElement.lang || 'en';
   const directLine = WebChat.createDirectLine({domain: new URL('v3/directline', '{{directLineURL}}'), token: '{{token}}'});
@@ -61,6 +63,7 @@
             name: 'startConversation',
             type: 'event',
             value: {
+              'completedActivities': '{{completedActivities}}',
               'MoodleActivityContent': '{{moodleActivityContent}}',
               'MoodleActivityName': '{{moodleActivityName}}',
               'MoodleActivityType': '{{moodleActivityType}}',

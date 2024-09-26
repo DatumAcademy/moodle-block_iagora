@@ -51,7 +51,7 @@ class block_iagora extends block_base {
         $copilotendpointurl = $this->config->copilotendpointurl;
         $directlineurl = $this->config->directlineurl;
 
-        if (!isset($copilotendpointurl)) {
+        if (!isset($copilotendpointurl) || empty($copilotendpointurl)) {
             $this->content->text = get_string('nocopilotendpointurl', 'block_iagora');
             return $this->content;
         }
@@ -81,6 +81,7 @@ class block_iagora extends block_base {
         $info = get_fast_modinfo($COURSE);
         $context = [
             'chatId' => $chatid,
+            'completedActivities' => json_encode($this->get_student_progress()),
             'directLineURL' => $directlineurl,
             'moodleActivityContent' => $PAGE->activityrecord->content,
             'moodleActivityName' => $PAGE->activityrecord->name,
@@ -125,6 +126,38 @@ class block_iagora extends block_base {
             $data->directlineurl = clean_param($directlineurl, PARAM_URL);
         }
         return parent::instance_config_save($data, $nolongerused);
+    }
+
+    /**
+     * Get the student's progress.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return array
+     */
+    function get_student_progress() {
+        global $COURSE, $USER;
+
+        $completedActivities = array();
+        $completion = new completion_info($COURSE);
+        $modinfo = get_fast_modinfo($COURSE, $USER->id);
+        $cms = $modinfo->get_cms();
+
+        foreach ($cms as $cm) {
+            if ($cm->completion == COMPLETION_TRACKING_NONE) {
+                continue;
+            }
+            if (!$cm->uservisible) {
+                continue;
+            }
+            $completiondata = $completion->get_data($cm, true, $USER->id);
+            if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                $completedActivities[] = $cm->name;
+            }
+        }
+        // Return the array of completed activities
+        return $completedActivities;
     }
 
     /**
