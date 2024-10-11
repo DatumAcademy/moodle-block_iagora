@@ -28,11 +28,19 @@
     Context variables required for this template:
     * chatId: The ID of the chat div element where to render the chat block.
     * tokenEndpointURL: The Copilot Token Endpoint URL for native apps.
+    * completedActivities: A JSON string containing the list of activities the user has already completed.
+    * uncompletedActivities: A JSON string containing the list of activities the user has not yet completed.
+    * userAvatarImage: The URL to the user's profile image, or an empty string if not available.
+    * userAvatarInitials: The initials of the user's name, used as an avatar if no image is available.
 
     Example context (json):
     {
         "chatId": "iagora_chat_55a6cad25a0f6",
-        "tokenEndpointURL": "https://insert/your/copilot/endpoint/url"
+        "tokenEndpointURL": "https://insert/your/copilot/endpoint/url",
+        "completedActivities": ["INTRODUCTION PARTIE 1", "QUIZ 1"],
+        "uncompletedActivities": ["QUIZ 2", "CONCLUSION PARTIE 1"],
+        "userAvatarImage": "https://example.com/path/to/avatar.jpg",
+        "userAvatarInitials": "AN"
     }
 }}
 {{#pix}} t/message, core {{/pix}}
@@ -44,9 +52,26 @@
 /* global WebChat */
 /* eslint-disable promise/no-native */
 (async function() {
+  // Function to decode HTML entities
+  function decodeHtml(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  }
   const styleOptions = {
-    hideUploadButton: true
+    hideUploadButton: true,
+    userAvatarImage: '{{userAvatarImage}}',
+    userAvatarInitials: '{{userAvatarInitials}}',
   };
+  const styleSet = window.WebChat.createStyleSet({
+          bubbleBackground: 'rgba(18, 124, 162, .1)',
+          bubbleFromUserBackground: 'rgba(0, 255, 0, .1)'
+        });
+
+        styleSet.textContent = Object.assign({}, styleSet.textContent, {
+          fontFamily: "'Comic Sans MS', 'Arial', sans-serif",
+          fontWeight: 'bold'
+        });
   const tokenEndpointURL = new URL('{{tokenEndpointURL}}');
   const locale = document.documentElement.lang || 'en';
   const apiVersion = tokenEndpointURL.searchParams.get('api-version');
@@ -69,7 +94,8 @@
       })
       .then(({token}) => token)
   ]);
-
+  const completedActivities = JSON.parse(decodeHtml(`{{{completedActivities}}}`));
+  const uncompletedActivities = JSON.parse(decodeHtml(`{{{uncompletedActivities}}}`));
   const directLine = WebChat.createDirectLine({domain: new URL('v3/directline', directLineURL), token});
 
   const subscription = directLine.connectionStatus$.subscribe({
@@ -80,7 +106,11 @@
             localTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             locale,
             name: 'startConversation',
-            type: 'event'
+            type: 'event',
+            value: {
+              completedActivities: completedActivities,
+              uncompletedActivities: uncompletedActivities
+            }
           })
           .subscribe();
         subscription.unsubscribe();
@@ -88,6 +118,6 @@
     }
   });
 
-  WebChat.renderWebChat({directLine, locale, styleOptions}, document.getElementById('{{chatId}}'));
+  WebChat.renderWebChat({directLine, locale, styleOptions, styleSet}, document.getElementById('{{chatId}}'));
 })();
 {{/js}}

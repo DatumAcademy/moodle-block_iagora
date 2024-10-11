@@ -55,8 +55,48 @@ class block_iagora extends block_base {
         } else {
             $this->content->text = $this->generate_chat_content($copilotendpointurl);
         }
+
         return $this->content;
 
+    }
+
+    /**
+     * Retrieve the progress of a student in the current course.
+     *
+     * This function returns an array containing the names of activities the student has completed
+     * based on their activity completion status within the course.
+     *
+     * @return array An array of completed and uncompleted activities.
+     */
+    private function get_student_progress() {
+        global $COURSE, $USER;
+
+        $completedactivities = [];
+        $uncompletedactivities = [];
+        $completion = new completion_info($COURSE);
+        $modinfo = get_fast_modinfo($COURSE, $USER->id);
+        $cms = $modinfo->get_cms();
+
+        foreach ($cms as $cm) {
+            if ($cm->completion == COMPLETION_TRACKING_NONE) {
+                continue;
+            }
+            if (!$cm->uservisible) {
+                continue;
+            }
+            $completiondata = $completion->get_data($cm, true, $USER->id);
+            if ($completiondata->completionstate == COMPLETION_COMPLETE ||
+                $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                $completedactivities[] = $cm->name;
+            } else {
+                $uncompletedactivities[] = $cm->name;
+            }
+        }
+
+        return [
+            'completedActivities' => $completedactivities,
+            'uncompletedActivities' => $uncompletedactivities,
+        ];
     }
 
     /**
@@ -66,14 +106,73 @@ class block_iagora extends block_base {
      * @return string The generated HTML content for the chat.
      */
     private function generate_chat_content($copilotendpointurl) {
-        global $OUTPUT;
+        global $OUTPUT, $USER;
+
+        $username = $USER->firstname . ' ' . $USER->lastname;
+        $useravatarinitials = $this->get_user_initials($username);
+        // Get the user's profile picture URL.
+        $useravatarimage = $this->get_profile_picture_url($USER);
+        // If there is no profile picture, use the initials.
+        if (!empty($useravatarimage)) {
+            $useravatarinitials = ''; // Clear initials if image exists.
+        }
         // Generate a unique identifier for the chat container.
         $chatid = uniqid('iagora_chat_');
+        $studentprogress = $this->get_student_progress();
         $context = [
             'chatId' => $chatid,
             'tokenEndpointURL' => $copilotendpointurl,
+            'completedActivities' => json_encode($this->get_student_progress()),
+            'uncompletedActivities' => json_encode($this->get_student_progress()),
+            'userAvatarImage' => $useravatarimage,
+            'userAvatarInitials' => $useravatarinitials ,
         ];
         return $OUTPUT->render_from_template('block_iagora/chat', $context);
+    }
+
+    /**
+     * Get the initials of a username.
+     *
+     * @param string $username The full name of the user.
+     * @return string The initials of the user.
+     */
+    private function get_user_initials($username) {
+        $initials = '';
+        foreach (explode(' ', $username) as $name) {
+            $initials .= strtoupper($name[0]);
+        }
+        return $initials;
+    }
+
+    /**
+     * Retrieve the profile picture URL of the user.
+     *
+     * @param stdClass $user The user object.
+     * @return string The URL of the user's profile picture, or an empty string if not available.
+     */
+    private function get_profile_picture_url($user) {
+        global $OUTPUT;
+
+        // Check if the user is logged in, not a guest, and has a profile picture.
+        if (isloggedin() && !isguestuser() && $user->picture > 0) {
+            // Get the user context.
+            $usercontext = context_user::instance($user->id, IGNORE_MISSING);
+
+            // Generate the URL for the profile picture.
+            $url = moodle_url::make_pluginfile_url(
+                $usercontext->id,   // Context ID.
+                'user',             // Component name (user).
+                'icon',             // File area (icon).
+                null,               // Item ID (not needed here).
+                '/',                // File path (root).
+                "f$1"               // File name.
+            ) . '?rev=' . $user->picture; // Add a revision parameter to avoid caching issues.
+
+            return $url;
+        }
+
+         // Return empty string if no profile picture.
+        return '';
     }
 
     /**
